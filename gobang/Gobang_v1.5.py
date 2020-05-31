@@ -1,21 +1,27 @@
-# Name   : Gobang game 
-# Author : simon 
-# e-mail : 2441873702@qq.com
-# Date   : 2020.05.27 19:02
-# version: v5
+#------------------------------------------------------------------------------------------------------------------------------#
+# Name   : Gobang game                                                                                                         #
+# Author : simon                                                                                                               #
+# e-mail : 2441873702@qq.com                                                                                                   #
+# Date   : 2020.05.31                                                                                                          #
+# version: v1.5                                                                                                                #
+#------------------------------------------------------------------------------------------------------------------------------#
 # http://www.pyinstaller.org/downloads.html   ------>   exe
 # http://www.ico51.cn/ 
 # https://tool.oschina.net/commons?type=3
-# https://github.com/nkiiiiid/Kivy-CN   ---->   apk
-# to-do : 增加结束判定，数据统计等，可实现重复游戏 ———— done 2020/05/27
-# bug 1 : 当鼠标点击到画布棋盘外仍可显示棋子 ———— fixed 2020/05/28
-# bug 2 : 棋子会覆盖之前已经绘制的位置 ———— fixed 2020/05/28
-# bug 3 : 棋子数量达到一定时，不会判定结果 ———— partial fixed 2020/05/28
-# bug 4 : 在resize到最大化或者是放大后，下面边框无法放置棋子 ———— fixed 2020/05/28
+#------------------------------------------------------------------------------------------------------------------------------#
+# to-do : Add ending judgment, data statistics, etc. which can realize repeated games. ———— done 2020/05/27
+# to-do : log file output ———— done 2020/05/31
+# bug 1 : When the mouse clicks outside the canvas chessboard, the chess can still be displayed. ———— fixed 2020/05/28
+# bug 2 : The pieces will overwrite the previously drawn position. ———— fixed 2020/05/28
+# bug 3 : When the number of pieces reaches a certain value, the result will not be determined. ———— partial fixed 2020/05/28
+# bug 4 : After resize to maximize or enlarge, the bottom border cannot place the pieces. ———— fixed 2020/05/28
+#------------------------------------------------------------------------------------------------------------------------------#
 
 
 import pygame
 import pygame.freetype
+import time
+import os
 
 
 # fps setting
@@ -68,48 +74,49 @@ def draw_chessboard_rect(background, rect_point, border):
 	return rect_point
 
 def success(position):
+	# judge the result by all the chess drawed previously
 	for item in position:
-		# 行 +
+		# row +
 		if [item[0]+1,item[1]] in position:
 			if [item[0]+2,item[1]] in position:
 				if [item[0]+3,item[1]] in position:
 					if ([item[0]+4,item[1]] in position):
 						# print("success!")
 						return True
-		# 行 -
+		# row -
 		if [item[0]-1,item[1]] in position:
 			if [item[0]-2,item[1]] in position:
 				if [item[0]-3,item[1]] in position:
 					if ([item[0]-4,item[1]] in position):
 						# print("success!")
 						return True
-		# 列 +
+		# column +
 		elif [item[0],item[1]+1] in position:
 			if [item[0],item[1]+2] in position:
 				if [item[0],item[1]+3] in position:
 					if [item[0],item[1]+4] in position:
 						return True
-		# 列 -
+		# column -
 		elif [item[0],item[1]-1] in position:
 			if [item[0],item[1]-2] in position:
 				if [item[0],item[1]-3] in position:
 					if [item[0],item[1]-4] in position:
 						return True
-		# 斜对角 + 
+		# diagonally opposite position (/) + 
 		elif [item[0]+1,item[1]+1] in position:
 			if [item[0]+2,item[1]+2] in position:
 				if [item[0]+3,item[1]+3] in position:
 					if [item[0]+4,item[1]+4] in position:
 						# print("success!")
 						return True
-		# 斜对角 - 
+		# # diagonally opposite position (/) - 
 		elif [item[0]-1,item[1]-1] in position:
 			if [item[0]-2,item[1]-2] in position:
 				if [item[0]-3,item[1]-3] in position:
 					if [item[0]-4,item[1]-4] in position:
 						# print("success!")
 						return True
-		# 反对角 +
+		# Anti diagonal (\) +
 		# fix bug 3
 		elif [item[0]+1,item[1]-1] in position:
 			if [item[0]+2,item[1]-2] in position:
@@ -117,8 +124,8 @@ def success(position):
 					if [item[0]+4,item[1]-4] in position:
 						# print("success!")
 						return True
-		# 反对角 -
-		# fix bug 3
+		# # Anti diagonal (\) -
+		# # fix bug 3
 		elif [item[0]-1,item[1]+1] in position:
 			if [item[0]-2,item[1]+2] in position:
 				if [item[0]-3,item[1]+3] in position:
@@ -185,7 +192,22 @@ end_flag = False
 key_flag = False
 reset_flag = False
 info_flag = False
+mouse_flag = True
 game_info = [total, white_win, black_win] = [0, 0, 0]
+
+str_chess = "[x-postion, y-position] color"
+
+log_file_name = time.strftime('%Y%m%d%H%M%S',time.localtime())
+root = ".//log//"
+if not os.path.exists(root):
+	os.mkdir(root)
+	str_mkdir = "make dir .//log//"
+else:
+	str_mkdir = "dir existed."
+
+log_file = open(".//log//" + log_file_name + ".log",'a') 
+log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + str_mkdir + "\n")
+
 
 # print(game_info[1])
 
@@ -213,14 +235,19 @@ while True:
 
 			elif not end_flag:
 				if event.type == pygame.MOUSEBUTTONDOWN:
+					mouse_flag = True
+					# log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + str_chess +'\n')
 					mouse_pos.append([event.pos[0],event.pos[1]])	# .pos --> tuple = (x_pos,y_pos)
 
+
 	if quit_flag:
+		log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + "game over. \n")
 		game_over(background, 0)
 	else:
 		pass
 
 	if reset_flag:
+		log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + "game restart. \n")
 		mouse_pos = []
 		white_num = 0
 		black_num = 0
@@ -247,6 +274,7 @@ while True:
 
 			if key not in chess_dict:
 				key_flag = True
+
 				# chess_flag = None
 				if count % 2 == 0:
 					chess_color = BLACK
@@ -257,10 +285,19 @@ while True:
 				count = count + 1
 				# 归一化
 				new_dict = {key : chess_flag}
+				str_chess = key + " " + chess_flag
+
+				# log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + key + chess_flag + '\n')
 				chess_dict.update(new_dict)
 				draw_chess(background, position, chess_color)
 			else:
 				key_flag = False
+
+	if mouse_flag == True:
+		log_file.write(time.strftime('%Y.%m.%d %H:%M:%S ',time.localtime()) + str_chess +'\n')
+		mouse_flag = False
+
+
 
 	draw_font(background, "total:{}  white wins:{}  black wins:{}".format(game_info[0],game_info[1],game_info[2]), 20, BLACK, ((width-450),10))
 	draw_font(background, "white chesses:{}  black chesses:{}".format(white_num,black_num), 20, BLACK, ((width-425),30))
@@ -281,3 +318,4 @@ while True:
 	fclock.tick(fps)
 	pygame.display.update()
 
+log_file.close()
